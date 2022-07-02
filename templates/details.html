@@ -1,0 +1,44 @@
+{% load custom_filters_and_tags %}
+<h3>Вы авторизованы, как: <u>{{ user }}</u></h3> <a href={% url 'account_logout' %}>Выйти</a><br><br><br>
+{% if user == object.ann_author %}
+
+<table align="center" bordercolor="black" border="2" width="100%">
+    <thead>
+        <tr>
+            <th>Заголовок</th>
+            <th>Содержание</th>
+            <th>Категория</th>
+            <th>Подтвержденные отклики</th>
+            <th>Время публикации</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ object.ann_title }}</td>
+            <td>{{ object.ann_body|safe }}</td>
+            <td>{{ object.ann_category.all|join:",<br> " }}</td>
+            <td>{{ object|confirmed_comment_filter|join:",<br> " }}</td>
+            <td>{{ object.ann_time_in|date:"d-m-Y H:i"}}</td>
+        </tr>
+    </tbody>
+</table>
+{% with object|unconfirmed_comment_filter as ann_comments_not_confirmed %}
+{% if ann_comments_not_confirmed %}
+<h3>Неподтвержденные отклики в объявлении:</h3>
+{% for a_c_n_c in ann_comments_not_confirmed %}
+{{ a_c_n_c }}
+<form method="POST">
+{% csrf_token %}
+<button type="submit" name="a_c_n_c_id" value="{{ a_c_n_c.id }}">Подтвердить</button>
+</form>
+<form action={% url 'comment_delete' a_c_n_c.id %}>
+<input type="submit" value="Удалить" />
+</form>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<br><br>
+{% else %}
+<h1>Думали, все так просто? ;)<br>Эта страница доступна только автору объявления</h1>
+{% endif %}
+<a href={% url 'main' %}><u>Назад на главную</u></a>
